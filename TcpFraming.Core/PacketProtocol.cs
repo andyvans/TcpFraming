@@ -5,8 +5,8 @@ using System.Net;
 namespace TcpFraming.Core;
 
 /// <summary>
-///     Manages ISO8583 TCP/IP message framing. Messages contain a binary two-byte message header which indicates the length of the
-///     TCP/IP data that follows, followed by the ISO8583 message itself. Messages are in network byte order and need to be translated to/from
+///     Manages TCP/IP message framing. Messages contain a binary two-byte message header which indicates the length of the
+///     TCP/IP data that follows, followed by the TCP message itself. Messages are in network byte order and need to be translated to/from
 ///     network byte order for processing.
 /// </summary>
 public static class PacketProtocol
@@ -50,7 +50,7 @@ public static class PacketProtocol
     }
 
     /// <summary>
-    ///     Wraps an ISO8583 message into a packet containing a message header. The message header is two bytes and contains a data length
+    ///     Wraps a TCP message into a packet containing a message header. The message header is two bytes and contains a data length
     ///     value. This is in network byte order and needs to be translated to/from network byte order for processing.
     /// </summary>
     public static byte[] WrapMessageForHost(byte[] message)

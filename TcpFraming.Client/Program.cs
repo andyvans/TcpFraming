@@ -11,6 +11,9 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        Console.InputEncoding = Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+
         var clientSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
         Console.WriteLine("Connecting to port 8087");
@@ -39,7 +42,7 @@ class Program
             stopwatch.Stop();
             if (response != null)
             {
-                Console.WriteLine($"Received response ({response.Length} bytes) in {stopwatch.ElapsedMilliseconds}ms: {Encoding.UTF8.GetString(response)}");
+                Console.WriteLine($"Received response ({response.Length} bytes) in {stopwatch.ElapsedTicks/10000f}ms : {Encoding.UTF8.GetString(response)}");
             }
         }
     }

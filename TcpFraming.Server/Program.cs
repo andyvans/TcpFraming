@@ -10,6 +10,9 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        Console.InputEncoding = Encoding.UTF8;
+        Console.OutputEncoding = Encoding.UTF8;
+
         var listenSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
         listenSocket.Bind(new IPEndPoint(IPAddress.Loopback, 8087));
 
@@ -61,10 +64,13 @@ class Program
 
     private static async Task ProcessMessageAsync(byte[] message, Stream stream)
     {
-        Console.WriteLine($"Received message ({message.Length} bytes): {Encoding.UTF8.GetString(message)}");
+        var decodedMessage = Encoding.UTF8.GetString(message);
+        Console.WriteLine($"Received message ({message.Length} bytes): {decodedMessage}");
+
+        var responseMessage = $"Echoing back: {decodedMessage}";
 
         // Echo the message back to the client
-        var response = PacketProtocol.WrapMessageForHost(message);
+        var response = PacketProtocol.WrapMessageForHost(Encoding.UTF8.GetBytes(responseMessage));
         await stream.WriteAsync(response);
         await stream.FlushAsync();
     }
