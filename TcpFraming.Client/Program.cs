@@ -31,7 +31,7 @@ class Program
                 break;
 
             var messageBytes = Encoding.UTF8.GetBytes(input);
-            var packet = PacketProtocol.WrapMessageForHost(messageBytes);
+            var packet = FramingProtocol.WrapMessageForHost(messageBytes);
 
             var stopwatch = Stopwatch.StartNew();
             await stream.WriteAsync(packet, 0, packet.Length);
@@ -54,7 +54,7 @@ class Program
             var result = await reader.ReadAsync();
             var buffer = result.Buffer;
 
-            if (PacketProtocol.TryGetMessage(ref buffer, out var message))
+            if (FramingProtocol.TryGetMessage(ref buffer, out var message))
             {
                 reader.AdvanceTo(buffer.Start, buffer.End);
                 return message;

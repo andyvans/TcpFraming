@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 
@@ -9,10 +10,10 @@ namespace TcpFraming.Core;
 ///     TCP/IP data that follows, followed by the TCP message itself. Messages are in network byte order and need to be translated to/from
 ///     network byte order for processing.
 /// </summary>
-public static class PacketProtocol
+public static class FramingProtocol
 {
     private const int FramingSize = 2;
-    private const int MaxMessageSize = 8192;
+    private const int MaxMessageSize = ushort.MaxValue;
 
     public static bool TryGetMessage(ref ReadOnlySequence<byte> buffer, [NotNullWhen(true)] out byte[]? message)
     {
@@ -23,8 +24,10 @@ public static class PacketProtocol
         // Check we have received the frame size
         if (bufferSize < FramingSize) return false;
 
-        var networkLength = buffer.Slice(0, FramingSize).ToArray();
-        int length = BitConverter.ToUInt16(networkLength.Reverse().ToArray(), 0);
+        // Read the two-byte header in network byte order (big-endian), without allocating
+        Span<byte> header = stackalloc byte[FramingSize];
+        buffer.Slice(0, FramingSize).CopyTo(header);
+        int length = BinaryPrimitives.ReadUInt16BigEndian(header);
 
         // Sanity check for very large packets, to prevent denial-of-service attacks
         if (length > MaxMessageSize) throw new ProtocolViolationException($"Message length {length} is larger than maximum message size {MaxMessageSize}");
@@ -33,7 +36,7 @@ public static class PacketProtocol
         if (length == 0)
         {
             // Move the buffer past the frame size
-            buffer = buffer.Slice(0, FramingSize);
+            buffer = buffer.Slice(FramingSize);
             return false;
         }
 
@@ -55,14 +58,14 @@ public static class PacketProtocol
     /// </summary>
     public static byte[] WrapMessageForHost(byte[] message)
     {
-        if (message.Length > ushort.MaxValue)
-            throw new ProtocolViolationException($"Message length is greater than {ushort.MaxValue} : {message.Length}");
+        if (message.Length > MaxMessageSize)
+            throw new ProtocolViolationException($"Message length is greater than {MaxMessageSize} : {message.Length}");
 
-        // Assume message is not greater than 65536 bytes
         var requestLength = (ushort)message.Length;
 
         var buffer = new byte[requestLength + FramingSize];
-        Buffer.BlockCopy(BitConverter.GetBytes(requestLength).Reverse().ToArray(), 0, buffer, 0, FramingSize);
+        // Write the length header in network byte order (big-endian)
+        BinaryPrimitives.WriteUInt16BigEndian(buffer, requestLength);
         Buffer.BlockCopy(message, 0, buffer, FramingSize, requestLength);
 
         return buffer;
