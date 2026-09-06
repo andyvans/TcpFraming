@@ -6,7 +6,7 @@ implement one using `System.IO.Pipelines`.
 ## Client
 ```pwsh
 .\TcpFraming.Client.exe
-Connecting to port 8087
+Connecting to 127.0.0.1:8087
 Type messages and press Enter to send (Ctrl+C to exit):
 hello world! 🌍
 Sent message (18 bytes)
@@ -16,7 +16,7 @@ Received response (32 bytes) in 15.4205ms : Echoing back: hello world! 🌍
 ## Server
 ```pwsh
 .\TcpFraming.Server.exe
-Listening on port 8087
+Listening on 127.0.0.1:8087
 [[::ffff:127.0.0.1]:65247]: connected
 Received message (18 bytes): hello world! 🌍
 ```
@@ -94,6 +94,40 @@ dotnet run --project TcpFraming.Client
 
 Type a message and press Enter. The client frames it, sends it, and waits for the server's
 echo. Press Enter on an empty line to exit.
+
+### Address and port arguments
+
+Both programs accept an optional IP address and port, defaulting to `127.0.0.1 8087`:
+
+```
+TcpFraming.Server [ipAddress] [port]
+TcpFraming.Client [ipAddress] [port]
+```
+
+To run on a different port:
+
+```pwsh
+dotnet run --project TcpFraming.Server -- 127.0.0.1 9000
+dotnet run --project TcpFraming.Client -- 127.0.0.1 9000
+```
+
+By default the server binds to the **loopback** address, so it only accepts connections from
+the same machine. To accept connections from other machines, bind to `0.0.0.0` and point the
+client at the server's actual address:
+
+```pwsh
+# on the server machine
+dotnet run --project TcpFraming.Server -- 0.0.0.0 8087
+
+# on another machine
+dotnet run --project TcpFraming.Client -- 192.168.1.50 8087
+```
+
+Running across a real network is also the easiest way to see *why* framing matters — over
+loopback with short messages, each write tends to arrive as a single read, which can mask a
+missing framing protocol entirely.
+
+Only literal IP addresses are accepted, not hostnames such as `localhost`.
 
 ## How the code works
 

@@ -9,16 +9,25 @@ namespace TcpFraming.Client;
 
 class Program
 {
+    private const string DefaultAddress = "127.0.0.1";
+
     static async Task Main(string[] args)
     {
         Console.InputEncoding = Encoding.UTF8;
         Console.OutputEncoding = Encoding.UTF8;
 
+        if (!EndPointParser.TryParse(args, out var endPoint, out var error))
+        {
+            Console.WriteLine(error);
+            Console.WriteLine($"Usage: TcpFraming.Client [ipAddress] [port]  (defaults: {DefaultAddress} {EndPointParser.DefaultPort})");
+            return;
+        }
+
         var clientSocket = new Socket(SocketType.Stream, ProtocolType.Tcp);
 
-        Console.WriteLine("Connecting to port 8087");
+        Console.WriteLine($"Connecting to {endPoint}");
 
-        clientSocket.Connect(new IPEndPoint(IPAddress.Loopback, 8087));
+        clientSocket.Connect(endPoint);
         var stream = new NetworkStream(clientSocket);
         var reader = PipeReader.Create(stream);
 
