@@ -3,14 +3,6 @@
 A small .NET 10 sample showing **why TCP applications need a framing protocol**, and how to
 implement one using `System.IO.Pipelines`.
 
-## Server
-```pwsh
-.\TcpFraming.Server.exe
-Listening on port 8087
-[[::ffff:127.0.0.1]:65247]: connected
-Received message (18 bytes): hello world! 🌍
-```
-
 ## Client
 ```pwsh
 .\TcpFraming.Client.exe
@@ -19,6 +11,14 @@ Type messages and press Enter to send (Ctrl+C to exit):
 hello world! 🌍
 Sent message (18 bytes)
 Received response (32 bytes) in 15.4205ms : Echoing back: hello world! 🌍
+```
+
+## Server
+```pwsh
+.\TcpFraming.Server.exe
+Listening on port 8087
+[[::ffff:127.0.0.1]:65247]: connected
+Received message (18 bytes): hello world! 🌍
 ```
 
 ## Why framing is needed
