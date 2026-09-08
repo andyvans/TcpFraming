@@ -68,7 +68,7 @@ Every message is preceded by a two-byte, big-endian (network byte order) length 
 Big-endian is used because it is the conventional byte order for network protocols, so the
 format stays interoperable regardless of the sending machine's native endianness.
 
-UTF-8 is used for text and emoji support, but the framing protocol is binary-safe and can carry any payload.
+In this example UTF-8 is used for text and emoji support, but the framing protocol is binary-safe and can carry any payload.
 
 ## Projects
 
@@ -136,9 +136,6 @@ Only literal IP addresses are accepted, not hostnames such as `localhost`.
 Allocates a buffer two bytes larger than the payload, writes the length with
 `BinaryPrimitives.WriteUInt16BigEndian`, then copies the payload in after it.
 
-`BinaryPrimitives` is used rather than `BitConverter` because `BitConverter` uses the
-*host's* byte order, which would produce a different wire format on a big-endian machine.
-
 ### Reading — `FramingProtocol.TryGetMessage`
 
 Takes the received bytes as a `ref ReadOnlySequence<byte>` and returns `true` only when a
@@ -157,38 +154,12 @@ The method returns `false` — leaving `buffer` untouched — when fewer than tw
 available (header incomplete) or when the payload has not fully arrived yet. That is the
 fragmented case: the caller loops, reads more from the socket, and tries again.
 
-Note that the maximum-size check happens **before** the completeness check. A malicious peer
-could otherwise advertise a huge length and force the receiver to buffer indefinitely, so the
-length is validated as soon as it is known.
-
 ### The read loop — `System.IO.Pipelines`
 
 Both server and client wrap the `NetworkStream` in a `PipeReader`. Pipelines handles the
 buffer management that framing otherwise forces you to write by hand: growing the buffer
 when a message spans reads, and reusing memory once bytes are consumed.
 
-The key call is:
-
 ```csharp
 reader.AdvanceTo(buffer.Start, buffer.End);
 ```
-
-The two arguments mean different things and are the most commonly misunderstood part of the
-API:
-
-- **`consumed`** — bytes the pipe may discard. Data before this point is gone for good.
-- **`examined`** — bytes already inspected. This tells the pipe that another `ReadAsync`
-  should not return until *more* data than this has arrived.
-
-Passing `buffer.End` as `examined` is what prevents a busy loop on a partial message: without
-it, `ReadAsync` would return immediately with the same incomplete data forever.
-
-## Things deliberately left simple
-
-This is teaching code, not a production library:
-
-- `TryGetMessage` calls `.ToArray()`, allocating a `byte[]` per message. A real
-  implementation would hand back the `ReadOnlySequence` slice and avoid the copy.
-- The server's per-client task is fire-and-forget, with no shutdown coordination or
-  `CancellationToken`.
-- There is no backpressure on the write side, no reconnect logic, and no TLS.
