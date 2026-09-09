@@ -1,7 +1,7 @@
 # TCP Framing Example with Pipelines
 
 A small .NET 10 sample showing **why TCP applications need a framing protocol**, and how to
-implement one using `System.IO.Pipelines`.
+implement one using `System.IO.Pipelines`.  Read more at [https://www.codify.nz/tcp-framing-with-pipelines/](https://www.codify.nz/tcp-framing-with-pipelines/).
 
 ## Client
 ```pwsh
