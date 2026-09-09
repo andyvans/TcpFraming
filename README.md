@@ -160,6 +160,8 @@ Both server and client wrap the `NetworkStream` in a `PipeReader`. Pipelines han
 buffer management that framing otherwise forces you to write by hand: growing the buffer
 when a message spans reads, and reusing memory once bytes are consumed.
 
+Once a message is read, then the reader is advanced past the message:
+
 ```csharp
 reader.AdvanceTo(buffer.Start, buffer.End);
 ```
