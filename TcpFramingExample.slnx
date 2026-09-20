@@ -1,0 +1,10 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="TcpFraming.Client/TcpFraming.Client.csproj" />
+  <Project Path="TcpFraming.Core/TcpFraming.Core.csproj" Id="27299eab-d02e-4870-825d-bb931e6d796f" />
+  <Project Path="TcpFraming.Server/TcpFraming.Server.csproj" />
+</Solution>
